@@ -60,7 +60,7 @@ def admin():
         username = request.form['username']
         password = request.form['password']
 
-        if username == 'badr' and password == 'Yanis@2018':
+        if username == 'admin' and password == 'admin':
             session['admin_logged_in'] = True
             return redirect(url_for('admin_console'))
         else:
