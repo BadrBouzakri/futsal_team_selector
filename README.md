@@ -1,5 +1,3 @@
----
-
 # Application de Gestion d'Équipes
 
 **Application créée par Badr**
