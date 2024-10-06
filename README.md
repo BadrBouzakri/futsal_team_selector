@@ -1,5 +1,3 @@
-Voici un **README** mis à jour pour une **installation avec Docker**. Il inclut les instructions pour exécuter l'application via Docker, tout en conservant les informations sur les fonctionnalités, l'administration, et la structure des fichiers.
-
 ---
 
 # Application de Gestion d'Équipes
