@@ -107,8 +107,8 @@ http://localhost:5050/admin
 
 Les identifiants par défaut pour accéder à la console d'administration sont :
 
-- **Nom d'utilisateur** : ``
-- **Mot de passe** : `
+- **Nom d'utilisateur** : `admin`
+- **Mot de passe** : `admin'
 
 Vous pouvez utiliser cette console pour ajouter de nouveaux joueurs et modifier leurs scores.
 
