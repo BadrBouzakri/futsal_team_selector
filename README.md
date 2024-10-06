@@ -35,8 +35,8 @@ Cette application permet de générer des équipes équilibrées à partir d'une
 Clonez ce dépôt Git sur votre machine locale :
 
 ```bash
-git clone https://github.com/votre-utilisateur/application-equipes.git
-cd application-equipes
+git clone git@github.com:BadrBouzakri/futsal_team_setector.git
+cd futsal_team_setector
 ```
 
 ### Étape 2 : Construire l'image Docker
