@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foot_app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: foot_app
+  template:
+    metadata:
+      labels:
+        app: foot_app
+    spec:
+      containers:
+      - name: foot_app
+        image: bouzakri/foot_app:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: "/data"
+          name: data-volume
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: myapp-pvc
