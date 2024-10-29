@@ -92,19 +92,24 @@ stage('Deploiement en staging'){
             }
 
         }
-  stage('Deploiement en prod'){
-        environment
-        {
-        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
-        }
-            steps {
-            // Create an Approval Button with a timeout of 15minutes.
-            // this require a manuel validation in order to deploy on production environment
-                    timeout(time: 15, unit: "MINUTES") {
-                        input message: 'Do you want to deploy in production ?', ok: 'Yes'
-                    }
+stage('Deploiement en prod') {
+    environment {
+        KUBECONFIG = credentials("config") // récupérer kubeconfig depuis un fichier de secret nommé 'config'
+    }
+    steps {
+        script {
+            // Créer un bouton d'approbation avec un délai d'expiration de 15 minutes
+            def userInput = input(
+                id: 'userInput', message: 'Do you want to deploy in production?', ok: 'Yes',
+                parameters: [
+                    choice(name: 'Approval', choices: ['Yes', 'No'], description: 'Select Yes to proceed')
+                ]
+            )
 
-                script {
+            // Vérifie si l'utilisateur a approuvé le déploiement
+            if (userInput == 'Yes') {
+                echo "Déploiement en production approuvé, exécution du déploiement..."
+
                 sh '''
                 kubectl apply -f k8s/deployment.yaml
                 kubectl apply -f k8s/service.yaml
@@ -112,10 +117,9 @@ stage('Deploiement en staging'){
                 kubectl apply -f k8s/pv.yaml
                 kubectl apply -f k8s/pvc.yaml
                 '''
-                }
+            } else {
+                echo "Déploiement en production annulé par l'utilisateur."
             }
-
         }
-
-}
+    }
 }
