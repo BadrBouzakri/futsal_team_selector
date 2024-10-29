@@ -41,7 +41,7 @@ pipeline {
                       sleep 5
                     done
                     # Vérification avec curl
-                    curl localhost:4545
+                    curl localhost:6000
                     '''
                 }
             }
