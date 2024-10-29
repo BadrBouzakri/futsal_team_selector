@@ -24,7 +24,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    docker run -d -p 4545:4545 --name jenkins $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
+                    docker run -d -p 6000:6000 --name jenkins $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
                     sleep 10
                     '''
                 }
