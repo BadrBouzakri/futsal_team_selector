@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: foot-app
+  name: foot:app
 spec:
   replicas: 3
   selector:
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: foot-app
-        image: bouzakri/foot_app:latest
+        image: bouzakri/foot_app
         ports:
         - containerPort: 80
         volumeMounts:
