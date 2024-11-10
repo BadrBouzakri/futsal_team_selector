@@ -82,7 +82,6 @@ pipeline {
                     sh '''
                     kubectl apply -f k8s/deployment.yaml -n dev
                     kubectl apply -f k8s/service.yaml -n dev
-                    kubectl apply -f k8s/ingress.yaml -n dev
                     kubectl apply -f k8s/pv.yaml -n dev
                     kubectl apply -f k8s/pvc.yaml -n dev
                     '''
@@ -99,7 +98,6 @@ pipeline {
                     sh '''
                     kubectl apply -f k8s/deployment.yaml -n staging
                     kubectl apply -f k8s/service.yaml -n staging
-                    kubectl apply -f k8s/ingress.yaml -n staging
                     kubectl apply -f k8s/pv.yaml -n staging
                     kubectl apply -f k8s/pvc.yaml -n staging
                     '''

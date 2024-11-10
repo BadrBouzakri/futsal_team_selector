@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: foot-app-ingress
+  namespace: prod
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure   # Utilisation de l'entrée "websecure" pour HTTPS
     traefik.ingress.kubernetes.io/router.tls: "true"             # Active le TLS (HTTPS)
