@@ -7,7 +7,7 @@ spec:
     # L'URL du serveur ACME
     server: https://acme-v02.api.letsencrypt.org/directory
     # Adresse e-mail utilisée pour l'enregistrement ACME
-    email: fall-lewis.y@datascientest.com
+    email: bouzakri.badr@gmail.com
     # Nom d'un secret utilisé pour stocker la clé privée du compte ACME
     privateKeySecretRef:
       name: letsencrypt-prod

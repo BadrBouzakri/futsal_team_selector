@@ -1,23 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: foot-app-ingress
+  name: acme-http-solver
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/http01-ingress-class: "traefik"
 spec:
-  ingressClassName: traefik
-  tls:
-    - secretName: foot-app-secret
-      hosts:
-        - foot.badr.cloud
   rules:
-  - host: foot.badr.cloud
-    http:
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-             service:
-              name: foot-app-service
-              port:
-                number: 80
+    - host: foot.badr.cloud
+      http:
+        paths:
+          - path: /.well-known/acme-challenge/*
+            pathType: Prefix
+            backend:
+              service:
+                name: cm-acme-http-solver
+                port:
+                  number: 80
