@@ -9,5 +9,6 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 6000
-  type: LoadBalancer       
+      nodePort: 30000
+  type: NodePort
   
