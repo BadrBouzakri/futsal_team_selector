@@ -61,6 +61,18 @@ pipeline {
             }
         }
 
+        // Étape pour mettre à jour les fichiers YAML avant chaque déploiement
+        stage('Update Kubernetes YAML Files') {
+            steps {
+                script {
+                    // Mise à jour des fichiers YAML pour utiliser les nouveaux tags Docker
+                    sh '''
+                    sed -i "s+image:.*+image: $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG+g" k8s/deployment.yaml
+                    '''
+                }
+            }
+        }
+
         stage('Deploiement en dev') {
             environment {
                 KUBECONFIG = credentials("config") // Récupération de kubeconfig depuis les credentials Jenkins
@@ -68,11 +80,11 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
-                    kubectl apply -f k8s/ingress.yaml
-                    kubectl apply -f k8s/pv.yaml
-                    kubectl apply -f k8s/pvc.yaml
+                    kubectl apply -f k8s/deployment.yaml -n dev
+                    kubectl apply -f k8s/service.yaml -n dev
+                    kubectl apply -f k8s/ingress.yaml -n dev
+                    kubectl apply -f k8s/pv.yaml -n dev
+                    kubectl apply -f k8s/pvc.yaml -n dev
                     '''
                 }
             }
@@ -85,11 +97,11 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
-                    kubectl apply -f k8s/ingress.yaml
-                    kubectl apply -f k8s/pv.yaml
-                    kubectl apply -f k8s/pvc.yaml
+                    kubectl apply -f k8s/deployment.yaml -n staging
+                    kubectl apply -f k8s/service.yaml -n staging
+                    kubectl apply -f k8s/ingress.yaml -n staging
+                    kubectl apply -f k8s/pv.yaml -n staging
+                    kubectl apply -f k8s/pvc.yaml -n staging
                     '''
                 }
             }
@@ -113,11 +125,11 @@ pipeline {
                     if (userInput == 'Yes') {
                         echo "Déploiement en production approuvé, exécution du déploiement..."
                         sh '''
-                        kubectl apply -f k8s/deployment.yaml
-                        kubectl apply -f k8s/service.yaml
-                        kubectl apply -f k8s/ingress.yaml
-                        kubectl apply -f k8s/pv.yaml
-                        kubectl apply -f k8s/pvc.yaml
+                        kubectl apply -f k8s/deployment.yaml -n prod
+                        kubectl apply -f k8s/service.yaml -n prod
+                        kubectl apply -f k8s/ingress.yaml -n prod
+                        kubectl apply -f k8s/pv.yaml -n prod
+                        kubectl apply -f k8s/pvc.yaml -n prod
                         '''
                     } else {
                         echo "Déploiement en production annulé par l'utilisateur."
