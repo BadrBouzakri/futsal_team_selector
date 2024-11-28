@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: foot-app-tls
+  namespace: prod
+spec:
+  secretName: foot-app-secret  # Le secret où le certificat sera stocké
+  dnsNames:
+    - foot.badr.cloud  # Le domaine que vous voulez sécuriser
+  issuerRef:
+    name: letsencrypt-prod  # Le cluster issuer configuré pour Let's Encrypt
+    kind: ClusterIssuer
+
