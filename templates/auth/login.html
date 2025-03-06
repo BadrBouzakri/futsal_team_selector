@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Connexion - Futsal Team Selector{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-card {
+        max-width: 500px;
+        margin: 50px auto;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .login-header {
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .login-body {
+        padding: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-control {
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 114, 255, 0.25);
+    }
+    
+    .login-submit {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        margin-top: 10px;
+    }
+    
+    .login-icon {
+        display: block;
+        margin: 0 auto 20px auto;
+        font-size: 50px;
+        color: white;
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .login-footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card login-card shadow">
+        <div class="login-header">
+            <i class="fas fa-users login-icon"></i>
+            <h3>Connexion</h3>
+            <p class="mb-0">Connectez-vous pour accéder à votre compte</p>
+        </div>
+        <div class="login-body">
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    <label for="username" class="form-label">Nom d'utilisateur</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        {{ form.username(class="form-control", placeholder="Entrez votre nom d'utilisateur") }}
+                    </div>
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.username.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        {{ form.password(class="form-control", placeholder="Entrez votre mot de passe") }}
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-check mb-3">
+                    {{ form.remember(class="form-check-input") }}
+                    <label class="form-check-label" for="remember">
+                        Se souvenir de moi
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary login-submit">
+                    <i class="fas fa-sign-in-alt me-2"></i> Se connecter
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                <p>Pas encore de compte ? Contactez l'administrateur</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
