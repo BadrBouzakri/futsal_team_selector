@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block title %}Créer des équipes équilibrées - Futsal Team Selector{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url("{{ url_for('static', filename='field_background.jpg') }}");
+        background-position: center;
+        background-size: cover;
+        color: white;
+        padding: 80px 0;
+        margin-bottom: 40px;
+        text-align: center;
+        border-radius: 0 0 50px 50px;
+    }
+    
+    .player-section {
+        background-color: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 40px;
+    }
+    
+    .player-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .player-checkbox {
+        display: none;
+    }
+    
+    .player-label {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+    
+    .player-label:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .player-checkbox:checked + .player-label {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--secondary-color);
+    }
+    
+    .custom-checkbox {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+    
+    .player-checkbox:checked + .player-label .custom-checkbox {
+        background-color: white;
+        border-color: white;
+    }
+    
+    .custom-checkbox::after {
+        content: "✓";
+        display: none;
+        color: var(--primary-color);
+        font-weight: bold;
+    }
+    
+    .player-checkbox:checked + .player-label .custom-checkbox::after {
+        display: block;
+    }
+    
+    .player-name {
+        font-weight: 500;
+        flex: 1;
+    }
+    
+    .player-skill {
+        padding: 2px 10px;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 100px;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+    }
+    
+    .player-checkbox:checked + .player-label .player-skill {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .selection-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 20px;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+    }
+    
+    .selection-counter {
+        display: flex;
+        align-items: center;
+    }
+    
+    .counter-badge {
+        background-color: var(--primary-color);
+        color: white;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-left: 10px;
+        font-weight: bold;
+    }
+    
+    .generate-btn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .features-section {
+        margin-top: 40px;
+    }
+    
+    .feature-card {
+        height: 100%;
+        text-align: center;
+        padding: 30px 20px;
+    }
+    
+    .feature-icon {
+        font-size: 40px;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+    }
+    
+    /* Animation pour les boutons */
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    .generate-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    .generate-btn:not(:disabled):hover {
+        animation: pulse 1s infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="display-4 mb-3">Futsal Team Selector</h1>
+        <p class="lead mb-4">Générez des équipes équilibrées pour vos matchs de futsal en quelques clics</p>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Section de sélection des joueurs -->
+    <section class="player-section shadow">
+        <h2 class="text-center mb-4">Sélectionnez 10 joueurs</h2>
+        
+        <form method="POST" action="{{ url_for('main.index') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="player-list">
+                {% for player_name, skill_level in all_players.items() %}
+                <div>
+                    <input type="checkbox" class="player-checkbox" 
+                           id="player-{{ loop.index }}" 
+                           name="players" 
+                           value="{{ player_name }}"
+                           onchange="updateCounter()">
+                    <label for="player-{{ loop.index }}" class="player-label">
+                        <span class="custom-checkbox"></span>
+                        <span class="player-name">{{ player_name }}</span>
+                        <span class="player-skill">{{ skill_level }}%</span>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="selection-info">
+                <div class="selection-counter">
+                    <span>Joueurs sélectionnés:</span>
+                    <span id="player-count" class="counter-badge">0</span>
+                    <span>/10</span>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetSelection()">
+                        <i class="fas fa-undo me-2"></i> Réinitialiser
+                    </button>
+                </div>
+            </div>
+            
+            <button type="submit" id="generate-btn" class="btn btn-success generate-btn" disabled>
+                <i class="fas fa-users me-2"></i> Générer les équipes
+            </button>
+        </form>
+    </section>
+    
+    <!-- Section des fonctionnalités -->
+    <section class="features-section">
+        <h2 class="text-center mb-4">Fonctionnalités</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Équipes équilibrées</h5>
+                        <p class="card-text">Notre algorithme crée des équipes équilibrées en fonction des compétences de chaque joueur.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Historique des matchs</h5>
+                        <p class="card-text">Consultez l'historique de tous les matchs précédents et leurs résultats.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Classement des joueurs</h5>
+                        <p class="card-text">Suivez les performances de chaque joueur avec un système de classement.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Compteur de joueurs sélectionnés
+    function updateCounter() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        let count = 0;
+        
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                count++;
+            }
+        });
+        
+        // Mettre à jour le compteur
+        document.getElementById('player-count').textContent = count;
+        
+        // Gérer le bouton de génération
+        const generateBtn = document.getElementById('generate-btn');
+        
+        if (count === 10) {
+            generateBtn.disabled = false;
+        } else {
+            generateBtn.disabled = true;
+        }
+        
+        // Désactiver les cases à cocher supplémentaires si 10 joueurs sont sélectionnés
+        if (count >= 10) {
+            checkboxes.forEach(checkbox => {
+                if (!checkbox.checked) {
+                    checkbox.disabled = true;
+                    checkbox.parentElement.querySelector('.player-label').style.opacity = '0.5';
+                }
+            });
+        } else {
+            checkboxes.forEach(checkbox => {
+                checkbox.disabled = false;
+                checkbox.parentElement.querySelector('.player-label').style.opacity = '1';
+            });
+        }
+    }
+    
+    // Réinitialiser la sélection
+    function resetSelection() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            checkbox.disabled = false;
+            checkbox.parentElement.querySelector('.player-label').style.opacity = '1';
+        });
+        
+        updateCounter();
+    }
+    
+    // Initialiser le compteur au chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCounter();
+    });
+</script>
+{% endblock %}
