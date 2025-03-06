@@ -1,99 +1,127 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import random
+import os
+from flask import Flask, render_template, session, redirect, url_for
+from flask_login import LoginManager, current_user
+import logging
+from logging.handlers import RotatingFileHandler
 
-app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Nécessaire pour les sessions et les messages flash
+from models import db, User, Player
+from config import config
 
-# Liste des joueurs avec leurs pourcentages de réussite
-all_players = {
-    "Badr": 70, "Aymane": 90, "Yassine": 80, "Mounir": 60,
-    "Luis": 50, "Mehdi": 90, "Tano": 90, "Elie": 85,
-    "Jeremy": 80, "Abdelilah": 65, "Malik": 75, "Abdel": 80,
-    "Houcine": 70, "Saber": 80, "Sandra": 65, "Nadir": 80,
-    "Jalal": 70, "Younes": 80, "Naim": 70, "Meh": 80, "Mehdi le r": 90,
-    "Vincent": 70, "Kevin": 70, "Saad": 80, "Aziz": 90, "Abdallah": 70
-}
-
-# Fonction d'équilibrage des équipes
-def balance_teams(selected_players):
-    sorted_players = sorted(selected_players, key=lambda player: all_players[player], reverse=True)
-    team1, team2 = [], []
-    team1_score, team2_score = 0, 0
-
-    for player in sorted_players:
-        if team1_score <= team2_score:
-            team1.append(player)
-            team1_score += all_players[player]
+def create_app(config_name='default'):
+    """Factory pattern pour créer l'application Flask"""
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
+    
+    # Initialiser les extensions
+    db.init_app(app)
+    
+    # Configurer le login manager
+    login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+    
+    # Créer les dossiers de données s'ils n'existent pas
+    data_dir = os.path.join(app.root_path, 'data')
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+    
+    # Créer la base de données si elle n'existe pas
+    with app.app_context():
+        db.create_all()
+        
+        # Créer un utilisateur admin par défaut s'il n'en existe pas
+        if not User.query.filter_by(username=app.config['ADMIN_USERNAME']).first():
+            admin = User(
+                username=app.config['ADMIN_USERNAME'],
+                email=app.config['ADMIN_EMAIL'],
+                is_admin=True
+            )
+            admin.set_password(app.config['ADMIN_PASSWORD'])
+            db.session.add(admin)
+            db.session.commit()
+            
+        # Importer les joueurs existants si aucun n'est défini
+        if Player.query.count() == 0:
+            default_players = {
+                "Badr": 70, "Aymane": 90, "Yassine": 80, "Mounir": 60,
+                "Luis": 50, "Mehdi": 90, "Tano": 90, "Elie": 85,
+                "Jeremy": 80, "Abdelilah": 65, "Malik": 75, "Abdel": 80,
+                "Houcine": 70, "Saber": 80, "Sandra": 65, "Nadir": 80,
+                "Jalal": 70, "Younes": 80, "Naim": 70, "Meh": 80, "Mehdi le r": 90,
+                "Vincent": 70, "Kevin": 70, "Saad": 80, "Aziz": 90, "Abdallah": 70
+            }
+            
+            for name, skill in default_players.items():
+                player = Player(name=name, skill_level=skill)
+                db.session.add(player)
+            
+            db.session.commit()
+    
+    # Enregistrer les blueprints
+    from routes.auth import auth
+    from routes.admin import admin
+    from routes.main import main
+    
+    app.register_blueprint(auth, url_prefix='/auth')
+    app.register_blueprint(admin, url_prefix='/admin')
+    app.register_blueprint(main)
+    
+    # Route pour rediriger les anciennes URLs pour la rétrocompatibilité
+    @app.route('/admin', methods=['GET', 'POST'])
+    def admin_redirect():
+        """Redirection de l'ancien chemin d'admin vers le nouveau"""
+        return redirect(url_for('auth.admin_login'))
+    
+    # Gestionnaire d'erreurs
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('errors/404.html'), 404
+    
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return render_template('errors/500.html'), 500
+    
+    # Configuration des logs en production
+    if not app.debug and not app.testing:
+        if app.config.get('LOG_TO_STDOUT'):
+            stream_handler = logging.StreamHandler()
+            stream_handler.setLevel(logging.INFO)
+            app.logger.addHandler(stream_handler)
         else:
-            team2.append(player)
-            team2_score += all_players[player]
-    return team1, team2
+            log_dir = os.path.join(app.root_path, 'logs')
+            if not os.path.exists(log_dir):
+                os.mkdir(log_dir)
+            file_handler = RotatingFileHandler(
+                os.path.join(log_dir, 'futsal.log'),
+                maxBytes=10240,
+                backupCount=10
+            )
+            file_handler.setFormatter(logging.Formatter(
+                '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+            ))
+            file_handler.setLevel(logging.INFO)
+            app.logger.addHandler(file_handler)
+        
+        app.logger.setLevel(logging.INFO)
+        app.logger.info('Démarrage de l\'application Futsal Team Selector')
+    
+    # Template context global
+    @app.context_processor
+    def inject_context():
+        return {
+            'current_user': current_user,
+            'app_name': 'Futsal Team Selector',
+            'app_version': '2.0.0',
+            'app_author': 'Badr'
+        }
+    
+    return app
 
-# Route principale
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        selected_players = request.form.getlist('players')
-
-        if len(selected_players) != 10:
-            flash('Veuillez sélectionner 10 joueurs.')
-            return redirect(url_for('index'))
-
-        team1, team2 = balance_teams(selected_players)
-        session['team1'], session['team2'] = team1, team2
-        return redirect(url_for('teams'))
-
-    return render_template('index.html', all_players=all_players)
-
-# Route pour afficher les équipes
-@app.route('/teams')
-def teams():
-    if 'team1' not in session or 'team2' not in session:
-        flash('Les équipes n\'ont pas été générées. Veuillez sélectionner les joueurs.')
-        return redirect(url_for('index'))
-    return render_template('teams.html', team1=session['team1'], team2=session['team2'])
-
-# Route pour la page de connexion à l'administration
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        if username == 'admin' and password == 'admin':
-            session['admin_logged_in'] = True
-            return redirect(url_for('admin_console'))
-        else:
-            flash('Nom d\'utilisateur ou mot de passe incorrect')
-            return render_template('admin.html', error=True)
-
-    return render_template('admin.html')
-
-# Console d'administration pour ajouter des joueurs
-@app.route('/admin/console', methods=['GET', 'POST'])
-def admin_console():
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('admin'))
-
-    if request.method == 'POST':
-        new_player = request.form['player_name']
-        new_score = request.form['player_score']
-
-        if new_player and new_score:
-            all_players[new_player] = int(new_score)
-            flash(f'Le joueur {new_player} a été ajouté avec un score de {new_score}')
-            return redirect(url_for('admin_console'))
-        else:
-            flash('Veuillez entrer un nom et un score valides.')
-
-    return render_template('admin_console.html', players=all_players)
-
-# Route pour se déconnecter de l'administration
-@app.route('/admin/logout')
-def admin_logout():
-    session.pop('admin_logged_in', None)
-    flash('Vous avez été déconnecté de l\'administration.')
-    return redirect(url_for('index'))
-
+# Créer l'application avec la configuration par défaut si exécuté directement
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app = create_app(os.getenv('FLASK_CONFIG', 'default'))
+    app.run(host='0.0.0.0', port=5000)
