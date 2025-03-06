@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block title %}Équipes générées - Futsal Team Selector{% endblock %}
+
+{% block extra_css %}
+<style>
+    .teams-header {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url("{{ url_for('static', filename='field_background.jpg') }}");
+        background-position: center;
+        background-size: cover;
+        color: white;
+        padding: 50px 0;
+        margin-bottom: 40px;
+        text-align: center;
+        border-radius: 0 0 50px 50px;
+    }
+    
+    .teams-container {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    @media (min-width: 768px) {
+        .teams-container {
+            flex-direction: row;
+        }
+    }
+    
+    .team-card {
+        flex: 1;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .team-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .team-header {
+        padding: 20px;
+        color: white;
+        text-align: center;
+    }
+    
+    .team1-header {
+        background: linear-gradient(to right, #1e3c72, #2a5298);
+    }
+    
+    .team2-header {
+        background: linear-gradient(to right, #cb2d3e, #ef473a);
+    }
+    
+    .team-body {
+        padding: 0;
+    }
+    
+    .player-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .player-item {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        background-color: white;
+        transition: background-color 0.3s;
+    }
+    
+    .player-item:nth-child(odd) {
+        background-color: #f8f9fa;
+    }
+    
+    .player-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .player-number {
+        width: 30px;
+        height: 30px;
+        background-color: #343a40;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+    }
+    
+    .team1-player .player-number {
+        background-color: #1e3c72;
+    }
+    
+    .team2-player .player-number {
+        background-color: #cb2d3e;
+    }
+    
+    .player-name {
+        font-weight: 500;
+        flex: 1;
+    }
+    
+    .match-result {
+        background-color: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-top: 30px;
+        margin-bottom: 40px;
+    }
+    
+    .result-title {
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: 600;
+    }
+    
+    .vs-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    
+    .vs-circle {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .team-score {
+        font-size: 20px;
+        font-weight: bold;
+        padding: 10px 20px;
+        color: white;
+        border-radius: 10px;
+    }
+    
+    .team1-score {
+        background: linear-gradient(to right, #1e3c72, #2a5298);
+        margin-right: 20px;
+    }
+    
+    .team2-score {
+        background: linear-gradient(to right, #cb2d3e, #ef473a);
+        margin-left: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Teams Header -->
+<section class="teams-header">
+    <div class="container">
+        <h1 class="display-5 mb-3">Équipes générées</h1>
+        <p class="lead">Voici les équipes équilibrées pour votre match de futsal</p>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Teams Display -->
+    <div class="teams-container">
+        <!-- Team 1 -->
+        <div class="card team-card shadow">
+            <div class="team-header team1-header">
+                <h2><i class="fas fa-users me-2"></i> Équipe 1</h2>
+            </div>
+            <div class="team-body">
+                <ul class="player-list">
+                    {% for player in team1 %}
+                    <li class="player-item team1-player">
+                        <span class="player-number">{{ loop.index }}</span>
+                        <span class="player-name">{{ player }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Team 2 -->
+        <div class="card team-card shadow">
+            <div class="team-header team2-header">
+                <h2><i class="fas fa-users me-2"></i> Équipe 2</h2>
+            </div>
+            <div class="team-body">
+                <ul class="player-list">
+                    {% for player in team2 %}
+                    <li class="player-item team2-player">
+                        <span class="player-number">{{ loop.index }}</span>
+                        <span class="player-name">{{ player }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Match Result Form -->
+    <div class="card match-result shadow">
+        <h3 class="result-title">Enregistrer le résultat du match</h3>
+        
+        <form method="POST" action="{{ url_for('main.teams') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="vs-container">
+                <div class="team-score team1-score">Équipe 1</div>
+                <div class="vs-circle">VS</div>
+                <div class="team-score team2-score">Équipe 2</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">Qui a gagné le match ?</label>
+                <div class="d-flex justify-content-center gap-3">
+                    {% for option in form.winner %}
+                    <div class="form-check form-check-inline">
+                        {{ option(class="form-check-input") }}
+                        <label class="form-check-label" for="{{ option.id }}">
+                            {{ option.label.text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i> Enregistrer le résultat
+                </button>
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary ms-2">
+                    <i class="fas fa-undo me-2"></i> Retour à la sélection
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
