@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+
+{% block title %}Classement des joueurs - Futsal Team Selector{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ranking-header {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url("{{ url_for('static', filename='field_background.jpg') }}");
+        background-position: center;
+        background-size: cover;
+        color: white;
+        padding: 50px 0;
+        margin-bottom: 40px;
+        text-align: center;
+        border-radius: 0 0 50px 50px;
+    }
+    
+    .ranking-card {
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 40px;
+    }
+    
+    .ranking-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .ranking-table th {
+        background-color: #f8f9fa;
+        padding: 15px;
+        text-align: left;
+        border-bottom: 2px solid #dee2e6;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .ranking-table td {
+        padding: 15px;
+        border-bottom: 1px solid #dee2e6;
+        vertical-align: middle;
+    }
+    
+    .ranking-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .ranking-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .rank-number {
+        width: 40px;
+        height: 40px;
+        background-color: #343a40;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin: 0 auto;
+    }
+    
+    .rank-1 {
+        background: linear-gradient(to right, #FFD700, #FFA500);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    
+    .rank-2 {
+        background: linear-gradient(to right, #C0C0C0, #A9A9A9);
+        box-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
+    }
+    
+    .rank-3 {
+        background: linear-gradient(to right, #CD7F32, #8B4513);
+        box-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+    }
+    
+    .skill-level {
+        width: 100px;
+        height: 15px;
+        background-color: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .skill-bar {
+        height: 100%;
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        border-radius: 10px;
+    }
+    
+    .win-rate {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 12px;
+        color: white;
+        background: conic-gradient(var(--primary-color) 0%, var(--primary-color) calc(var(--win-rate) * 1%), #e9ecef calc(var(--win-rate) * 1%), #e9ecef 100%);
+        position: relative;
+    }
+    
+    .win-rate::before {
+        content: "";
+        width: 35px;
+        height: 35px;
+        background-color: white;
+        border-radius: 50%;
+        position: absolute;
+    }
+    
+    .win-rate-text {
+        position: relative;
+        z-index: 2;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .stats-container {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background-color: white;
+        border-radius: 15px;
+        padding: 20px;
+        min-width: 200px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin: 10px;
+        flex: 1;
+    }
+    
+    .stat-icon {
+        font-size: 30px;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 14px;
+    }
+    
+    .filters {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .filter-btn {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .filter-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+    
+    .search-box {
+        width: 250px;
+        padding: 8px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Ranking Header -->
+<section class="ranking-header">
+    <div class="container">
+        <h1 class="display-5 mb-3">Classement des joueurs</h1>
+        <p class="lead">Découvrez les performances de tous les joueurs</p>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Stats Overview -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-value">{{ players|length }}</div>
+            <div class="stat-label">Joueurs actifs</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-futbol"></i>
+            </div>
+            <div class="stat-value">{{ players|sum(attribute='games_played') }}</div>
+            <div class="stat-label">Matchs joués</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="stat-value">{{ players|sum(attribute='wins') }}</div>
+            <div class="stat-label">Victoires totales</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-value">
+                {% if players %}
+                    {{ (players|sum(attribute='win_rate') / players|length)|round(1) }}%
+                {% else %}
+                    0%
+                {% endif %}
+            </div>
+            <div class="stat-label">Taux de victoire moyen</div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters">
+        <div class="filter-group">
+            <button class="filter-btn active" onclick="sortTable('rank')">Par défaut</button>
+            <button class="filter-btn" onclick="sortTable('win-rate')">Taux de victoire</button>
+            <button class="filter-btn" onclick="sortTable('games')">Matchs joués</button>
+            <button class="filter-btn" onclick="sortTable('skill')">Niveau</button>
+        </div>
+        
+        <div>
+            <input type="text" class="search-box" placeholder="Rechercher un joueur..." oninput="searchTable(this.value)">
+        </div>
+    </div>
+    
+    <!-- Ranking Table -->
+    <div class="card ranking-card shadow">
+        <div class="table-responsive">
+            <table class="ranking-table" id="rankingTable">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th>Joueur</th>
+                        <th class="text-center">Niveau</th>
+                        <th class="text-center">Matchs joués</th>
+                        <th class="text-center">Victoires</th>
+                        <th class="text-center">Taux de victoire</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in players %}
+                    <tr data-win-rate="{{ player.win_rate }}" data-games="{{ player.games_played }}" data-skill="{{ player.skill_level }}">
+                        <td class="text-center">
+                            <div class="rank-number {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">
+                                {{ loop.index }}
+                            </div>
+                        </td>
+                        <td>
+                            <strong>{{ player.name }}</strong>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <div class="skill-level me-2">
+                                    <div class="skill-bar" style="width: {{ player.skill_level }}%;"></div>
+                                </div>
+                                <span>{{ player.skill_level }}%</span>
+                            </div>
+                        </td>
+                        <td class="text-center">{{ player.games_played }}</td>
+                        <td class="text-center">{{ player.wins }}</td>
+                        <td class="text-center">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <div class="win-rate me-2" style="--win-rate: {{ player.win_rate }}">
+                                    <span class="win-rate-text">{{ player.win_rate }}%</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <em>Aucun joueur n'a encore participé à un match</em>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Fonction pour trier le tableau
+    function sortTable(sortType) {
+        // Mettre à jour les boutons actifs
+        const buttons = document.querySelectorAll('.filter-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        const table = document.getElementById('rankingTable');
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        
+        // Ignorer la ligne "Aucun joueur" si elle existe
+        const emptyRow = rows.find(row => row.cells.length === 1);
+        if (emptyRow) return;
+        
+        // Trier les lignes
+        rows.sort((a, b) => {
+            let valueA, valueB;
+            
+            if (sortType === 'rank') {
+                // Par défaut (déjà trié)
+                return 0;
+            } else if (sortType === 'win-rate') {
+                valueA = parseFloat(a.dataset.winRate);
+                valueB = parseFloat(b.dataset.winRate);
+            } else if (sortType === 'games') {
+                valueA = parseInt(a.dataset.games);
+                valueB = parseInt(b.dataset.games);
+            } else if (sortType === 'skill') {
+                valueA = parseInt(a.dataset.skill);
+                valueB = parseInt(b.dataset.skill);
+            }
+            
+            return valueB - valueA; // Tri décroissant
+        });
+        
+        // Réorganiser le tableau
+        const tbody = table.querySelector('tbody');
+        rows.forEach((row, index) => {
+            // Mettre à jour le numéro de rang
+            const rankCell = row.querySelector('.rank-number');
+            rankCell.textContent = index + 1;
+            
+            // Mettre à jour les classes de médaille
+            rankCell.classList.remove('rank-1', 'rank-2', 'rank-3');
+            if (index === 0) rankCell.classList.add('rank-1');
+            if (index === 1) rankCell.classList.add('rank-2');
+            if (index === 2) rankCell.classList.add('rank-3');
+            
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Fonction pour rechercher dans le tableau
+    function searchTable(query) {
+        query = query.toLowerCase();
+        const rows = document.querySelectorAll('#rankingTable tbody tr');
+        
+        rows.forEach(row => {
+            // Ignorer la ligne "Aucun joueur" si elle existe
+            if (row.cells.length === 1 && row.cells[0].textContent.trim().startsWith('Aucun')) {
+                row.style.display = '';
+                return;
+            }
+            
+            const playerName = row.cells[1].textContent.toLowerCase();
+            if (playerName.includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}
