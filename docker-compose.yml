@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  futsal-app:
+    build: .
+    container_name: futsal-teams-generator
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5050/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - futsal-network
+
+networks:
+  futsal-network:
+    driver: bridge
+
+volumes:
+  futsal-data:
+    driver: local
