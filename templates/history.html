@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique des Équipes - Futsal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .nav-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .history-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .history-item {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #667eea;
+        }
+
+        .history-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .history-date {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-method {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .history-method.snake {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+
+        .history-method.random {
+            background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+        }
+
+        .teams-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .team-column {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid transparent;
+        }
+
+        .team-column.team1 {
+            border-left-color: #4CAF50;
+        }
+
+        .team-column.team2 {
+            border-left-color: #2196F3;
+        }
+
+        .team-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .team-badge {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .team1 .team-badge {
+            background: #4CAF50;
+        }
+
+        .team2 .team-badge {
+            background: #2196F3;
+        }
+
+        .players-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .players-list li {
+            padding: 5px 0;
+            color: #666;
+            border-bottom: 1px solid #eee;
+        }
+
+        .players-list li:last-child {
+            border-bottom: none;
+        }
+
+        .vs-divider {
+            background: #667eea;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 0 auto;
+        }
+
+        .history-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .balance-indicator {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .balance-excellent {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .balance-good {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+
+        .balance-poor {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .teams-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .vs-divider {
+                display: none;
+            }
+
+            .history-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .history-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Animation d'apparition */
+        .history-item {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s forwards;
+        }
+
+        .history-item:nth-child(odd) {
+            animation-delay: 0.1s;
+        }
+
+        .history-item:nth-child(even) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Historique des Équipes</h1>
+            <p>Retrouvez toutes vos formations d'équipes précédentes</p>
+        </div>
+
+        <div class="navigation">
+            <a href="/" class="nav-link">
+                🏠 Accueil
+            </a>
+            <a href="/admin" class="nav-link">
+                ⚙️ Administration
+            </a>
+        </div>
+
+        {% if history %}
+            <div class="history-grid">
+                {% for item in history %}
+                <div class="history-item">
+                    <div class="history-header">
+                        <div class="history-date">
+                            🕐 {{ item.date }}
+                        </div>
+                        <div class="history-method 
+                            {% if item.method == 'snake' %}snake
+                            {% elif item.method == 'random' %}random
+                            {% endif %}">
+                            {% if item.method == 'skill' %}
+                                🎯 Par compétence
+                            {% elif item.method == 'snake' %}
+                                🐍 Serpent
+                            {% elif item.method == 'random' %}
+                                🎲 Aléatoire
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="teams-row">
+                        <div class="team-column team1">
+                            <div class="team-title">
+                                <div class="team-badge">1</div>
+                                Équipe Verte
+                            </div>
+                            <ul class="players-list">
+                                {% for player in item.team1 %}
+                                <li>{{ player }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="vs-divider">VS</div>
+
+                        <div class="team-column team2">
+                            <div class="team-title">
+                                <div class="team-badge">2</div>
+                                Équipe Bleue
+                            </div>
+                            <ul class="players-list">
+                                {% for player in item.team2 %}
+                                <li>{{ player }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="history-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Équipe 1</div>
+                            <div class="stat-value">{{ item.team1_score }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Équilibre</div>
+                            <div class="stat-value">
+                                {% set balance = 100 - ((item.team1_score - item.team2_score)|abs / ((item.team1_score + item.team2_score) / 2) * 100)|round %}
+                                <span class="balance-indicator
+                                    {% if balance >= 90 %}balance-excellent
+                                    {% elif balance >= 75 %}balance-good
+                                    {% else %}balance-poor{% endif %}">
+                                    {{ balance }}%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Équipe 2</div>
+                            <div class="stat-value">{{ item.team2_score }}</div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="recreateTeams({{ item|tojson|safe }})">
+                            🔄 Recréer ces équipes
+                        </button>
+                        <button class="btn btn-secondary" onclick="shareTeams({{ item|tojson|safe }})">
+                            📤 Partager
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <h3>Aucun historique disponible</h3>
+                <p>Vous n'avez pas encore généré d'équipes.<br>
+                Commencez par créer votre première formation !</p>
+                <a href="/" class="btn btn-primary" style="margin-top: 20px;">
+                    ⚽ Créer des équipes
+                </a>
+            </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Application créée par Badr - {{ current_year }}</p>
+        </div>
+    </div>
+
+    <script>
+        // Fonction pour recréer des équipes à partir de l'historique
+        function recreateTeams(teamData) {
+            if (confirm('Voulez-vous recréer ces équipes avec les mêmes joueurs ?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/';
+                
+                // Ajouter tous les joueurs
+                const allPlayers = teamData.team1.concat(teamData.team2);
+                allPlayers.forEach(player => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'players';
+                    input.value = player;
+                    form.appendChild(input);
+                });
+                
+                // Ajouter la méthode
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = 'team_method';
+                methodInput.value = teamData.method;
+                form.appendChild(methodInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Fonction pour partager des équipes
+        function shareTeams(teamData) {
+            const shareText = `🏆 Équipes Futsal (${teamData.date})\n\n` +
+                `Équipe Verte: ${teamData.team1.join(', ')}\n\n` +
+                `Équipe Bleue: ${teamData.team2.join(', ')}\n\n` +
+                `Méthode: ${getMethodName(teamData.method)}\n` +
+                `Équilibre: ${calculateBalance(teamData)}%`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Équipes Futsal',
+                    text: shareText
+                });
+            } else {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Équipes copiées dans le presse-papiers !');
+                }).catch(() => {
+                    // Fallback si le clipboard ne fonctionne pas
+                    const textarea = document.createElement('textarea');
+                    textarea.value = shareText;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    alert('Équipes copiées dans le presse-papiers !');
+                });
+            }
+        }
+
+        // Fonctions utilitaires
+        function getMethodName(method) {
+            switch(method) {
+                case 'skill': return '🎯 Par compétence';
+                case 'snake': return '🐍 Serpent';
+                case 'random': return '🎲 Aléatoire';
+                default: return method;
+            }
+        }
+
+        function calculateBalance(teamData) {
+            const diff = Math.abs(teamData.team1_score - teamData.team2_score);
+            const avg = (teamData.team1_score + teamData.team2_score) / 2;
+            return Math.round(100 - (diff / avg * 100));
+        }
+
+        // Animation au scroll
+        function animateOnScroll() {
+            const items = document.querySelectorAll('.history-item');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            });
+
+            items.forEach(item => {
+                observer.observe(item);
+            });
+        }
+
+        // Initialiser les animations
+        document.addEventListener('DOMContentLoaded', animateOnScroll);
+    </script>
+</body>
+</html>

@@ -3,173 +3,569 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console d'administration</title>
+    <title>Console d'Administration - Futsal</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f0f0;
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            background: linear-gradient(to right, #00c6ff, #0072ff); /* Dégradé élégant */
+            padding: 20px 0;
         }
 
         .container {
-            background-color: white;
+            max-width: 1000px;
+            margin: 0 auto;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
         }
 
-        h1 {
-            font-size: 24px;
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .stat-card.players {
+            border-left-color: #4CAF50;
+        }
+
+        .stat-card.history {
+            border-left-color: #2196F3;
+        }
+
+        .stat-card.balance {
+            border-left-color: #FF9800;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #333;
             margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-control {
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .players-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .players-table thead {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .players-table th,
+        .players-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .players-table th {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .players-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .players-table tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+        }
+
+        .player-name {
+            font-weight: 600;
             color: #333;
         }
 
-        form {
+        .player-level {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .level-bar {
+            width: 60px;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .level-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .level-excellent {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+        }
+
+        .level-good {
+            background: linear-gradient(90deg, #FF9800, #F57C00);
+        }
+
+        .level-average {
+            background: linear-gradient(90deg, #f44336, #d32f2f);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+            min-width: auto;
+        }
+
+        .edit-form {
+            display: none;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .edit-form.active {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .navigation {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
         }
 
-        input[type="text"], input[type="number"] {
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            flex: 1;
-            margin-right: 10px;
-        }
-
-        input[type="text"]:focus, input[type="number"]:focus {
-            outline: none;
-            border-color: #0072ff;
-            box-shadow: 0 0 5px rgba(0, 114, 255, 0.5);
-        }
-
-        button {
-            background-color: #0072ff;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #005ec1;
-        }
-
-        .players-list {
-            text-align: left;
-        }
-
-        .players-list h2 {
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        .players-list ul {
-            list-style: none;
-            padding: 0;
-            font-size: 16px;
-        }
-
-        .players-list ul li {
-            padding: 8px 0;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .players-list ul li:last-child {
-            border-bottom: none;
-        }
-
-        .logout-link {
-            margin-top: 20px;
-            display: inline-block;
-            color: #0072ff;
+        .nav-link {
+            color: #667eea;
             text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .logout-link:hover {
-            text-decoration: underline;
+        .nav-link:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .alert-error {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .no-players {
+            text-align: center;
+            padding: 40px;
+            color: #666;
         }
 
         @media (max-width: 768px) {
-            form {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group {
                 flex-direction: column;
             }
 
-            input[type="text"], input[type="number"] {
-                margin-right: 0;
-                margin-bottom: 10px;
+            .search-controls {
+                flex-direction: column;
             }
 
-            button {
-                width: 100%;
+            .players-table {
+                font-size: 14px;
+            }
+
+            .players-table th,
+            .players-table td {
+                padding: 10px 8px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        /* Animations */
+        .form-section,
+        .players-section {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s forwards;
+        }
+
+        .players-section {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Ajouter un joueur</h1>
+        <div class="header">
+            <h1>⚙️ Console d'Administration</h1>
+            <p>Gérez les joueurs et consultez les statistiques de l'application</p>
+        </div>
 
-        <form method="POST" action="/admin/console">
-            <input type="text" name="player_name" placeholder="Nom du joueur" required>
-            <input type="number" name="player_score" placeholder="Score (%)" required>
-            <button type="submit">Ajouter</button>
-        </form>
+        <div class="navigation">
+            <a href="/" class="nav-link">
+                🏠 Retour à l'accueil
+            </a>
+            <a href="/history" class="nav-link">
+                📅 Historique
+            </a>
+            <a href="/admin/logout" class="nav-link">
+                🚪 Se déconnecter
+            </a>
+        </div>
 
-        <div class="players-list">
-            <h2>Joueurs actuels</h2>
-            <div style="margin-bottom: 15px;">
-                <input type="text" id="player-search" onkeyup="filterTable()" placeholder="Rechercher un joueur..." 
-                    style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px;">
+        <!-- Messages Flash -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success">
+                        ✅ {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Statistiques -->
+        <div class="admin-stats">
+            <div class="stat-card players">
+                <div class="stat-number">{{ players|length }}</div>
+                <div class="stat-label">Joueurs enregistrés</div>
             </div>
+            <div class="stat-card history">
+                <div class="stat-number">20</div>
+                <div class="stat-label">Historique max</div>
+            </div>
+            <div class="stat-card balance">
+                <div class="stat-number">
+                    {% set avg_level = (players.values()|sum / players|length)|round if players else 0 %}
+                    {{ avg_level }}
+                </div>
+                <div class="stat-label">Niveau moyen</div>
+            </div>
+        </div>
+
+        <!-- Formulaire d'ajout de joueur -->
+        <div class="form-section">
+            <h2>➕ Ajouter un nouveau joueur</h2>
+            <form method="POST" action="/admin/console">
+                <div class="form-group">
+                    <input type="text" 
+                           name="player_name" 
+                           class="form-control" 
+                           placeholder="Nom du joueur" 
+                           required>
+                    <input type="number" 
+                           name="player_score" 
+                           class="form-control" 
+                           placeholder="Niveau (0-100)" 
+                           min="0" 
+                           max="100" 
+                           required
+                           style="max-width: 150px;">
+                    <button type="submit" class="btn btn-primary">
+                        ➕ Ajouter
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Liste des joueurs -->
+        <div class="players-section">
+            <h2>👥 Gestion des joueurs ({{ players|length }} joueurs)</h2>
             
-            <table id="players-table" style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+            <div class="search-controls">
+                <input type="text" 
+                       id="player-search" 
+                       class="search-input"
+                       placeholder="🔍 Rechercher un joueur..." 
+                       onkeyup="filterTable()">
+                <button type="button" class="btn btn-secondary" onclick="sortTable()">
+                    📊 Trier par niveau
+                </button>
+                <a href="/admin/clear-history" 
+                   class="btn btn-warning" 
+                   onclick="return confirm('Êtes-vous sûr de vouloir effacer tout l\'historique ?')">
+                    🗑️ Effacer l'historique
+                </a>
+            </div>
+
+            {% if players %}
+            <table class="players-table" id="players-table">
                 <thead>
                     <tr>
-                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Joueur</th>
-                        <th style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">Score</th>
-                        <th style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">Actions</th>
+                        <th>Joueur</th>
+                        <th>Niveau</th>
+                        <th>Visualisation</th>
+                        <th style="text-align: center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for player, score in players.items() %}
                     <tr class="player-row">
-                        <td style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">{{ player }}</td>
-                        <td style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">
-                            <span class="score-display">{{ score }}%</span>
-                            <div class="edit-form" style="display: none;">
-                                <form method="POST" action="/admin/console" style="display: flex; align-items: center;">
+                        <td>
+                            <div class="player-name">{{ player }}</div>
+                        </td>
+                        <td>
+                            <span class="score-display">{{ score }}</span>
+                            <div class="edit-form" id="edit-form-{{ loop.index }}">
+                                <form method="POST" action="/admin/console" style="display: flex; align-items: center; gap: 10px;">
                                     <input type="hidden" name="edit_player" value="{{ player }}">
-                                    <input type="number" name="edit_score" value="{{ score }}" min="0" max="100" style="width: 60px; padding: 4px; margin-right: 5px;">
-                                    <button type="submit" style="background-color: #28a745; padding: 4px 8px; font-size: 12px; border: none; color: white; border-radius: 3px; cursor: pointer;">OK</button>
+                                    <input type="number" 
+                                           name="edit_score" 
+                                           value="{{ score }}" 
+                                           min="0" 
+                                           max="100" 
+                                           class="form-control"
+                                           style="width: 80px;">
+                                    <button type="submit" class="btn btn-primary btn-small">
+                                        ✅ OK
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-secondary btn-small" 
+                                            onclick="cancelEdit({{ loop.index }})">
+                                        ❌ Annuler
+                                    </button>
                                 </form>
                             </div>
                         </td>
-                        <td style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">
-                            <div style="display: flex; justify-content: center; gap: 5px;">
-                                <button type="button" onclick="toggleEdit(this)" 
-                                        style="background-color: #17a2b8; padding: 5px 10px; font-size: 12px; border: none; color: white; border-radius: 3px; cursor: pointer;">
-                                    Modifier
+                        <td>
+                            <div class="player-level">
+                                <div class="level-bar">
+                                    <div class="level-fill 
+                                        {% if score >= 80 %}level-excellent
+                                        {% elif score >= 65 %}level-good
+                                        {% else %}level-average{% endif %}"
+                                        style="width: {{ score }}%"></div>
+                                </div>
+                                <span>{{ score }}%</span>
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <div class="action-buttons">
+                                <button type="button" 
+                                        class="btn btn-secondary btn-small" 
+                                        onclick="toggleEdit({{ loop.index }})">
+                                    ✏️ Modifier
                                 </button>
                                 <form method="POST" action="/admin/console" style="margin: 0; display: inline;">
                                     <input type="hidden" name="delete_player" value="{{ player }}">
-                                    <button type="submit" style="background-color: #dc3545; padding: 5px 10px; font-size: 12px; border: none; color: white; border-radius: 3px; cursor: pointer;">
-                                        Supprimer
+                                    <button type="submit" 
+                                            class="btn btn-danger btn-small"
+                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer {{ player }} ?')">
+                                        🗑️ Supprimer
                                     </button>
                                 </form>
                             </div>
@@ -178,47 +574,146 @@
                     {% endfor %}
                 </tbody>
             </table>
-            
-            <script>
-                function toggleEdit(button) {
-                    const row = button.closest('tr');
-                    const scoreDisplay = row.querySelector('.score-display');
-                    const editForm = row.querySelector('.edit-form');
-                    
-                    if (scoreDisplay.style.display !== 'none') {
-                        scoreDisplay.style.display = 'none';
-                        editForm.style.display = 'block';
-                    } else {
-                        scoreDisplay.style.display = 'inline';
-                        editForm.style.display = 'none';
-                    }
-                }
-                
-                function filterTable() {
-                    const input = document.getElementById('player-search');
-                    const filter = input.value.toLowerCase();
-                    const rows = document.querySelectorAll('.player-row');
-                    
-                    rows.forEach(row => {
-                        const playerName = row.cells[0].textContent.toLowerCase();
-                        if (playerName.includes(filter)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                }
-            </script>
+            {% else %}
+            <div class="no-players">
+                <h3>Aucun joueur enregistré</h3>
+                <p>Commencez par ajouter des joueurs pour pouvoir créer des équipes.</p>
+            </div>
+            {% endif %}
         </div>
 
-        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-            <a href="/" style="color: #0072ff; text-decoration: none;">Retour à l'accueil</a>
-            <a href="/admin/logout" class="logout-link">Se déconnecter</a>
+        <div class="footer">
+            <p>Application créée par Badr - {{ current_year }}</p>
         </div>
-        
-        <footer style="margin-top: 20px; font-size: 14px; color: #666; text-align: center;">
-            Application créée par Badr - {{ current_year }}
-        </footer>
     </div>
+
+    <script>
+        // Variables globales
+        let currentSortOrder = 'asc';
+
+        // Fonction de filtrage des joueurs
+        function filterTable() {
+            const input = document.getElementById('player-search');
+            const filter = input.value.toLowerCase();
+            const rows = document.querySelectorAll('.player-row');
+            
+            rows.forEach(row => {
+                const playerName = row.cells[0].textContent.toLowerCase();
+                if (playerName.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Fonction de tri des joueurs
+        function sortTable() {
+            const table = document.getElementById('players-table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('.player-row'));
+            
+            rows.sort((a, b) => {
+                const scoreA = parseInt(a.querySelector('.score-display').textContent);
+                const scoreB = parseInt(b.querySelector('.score-display').textContent);
+                
+                if (currentSortOrder === 'asc') {
+                    return scoreB - scoreA; // Tri décroissant
+                } else {
+                    return scoreA - scoreB; // Tri croissant
+                }
+            });
+            
+            // Réorganiser les lignes
+            rows.forEach(row => tbody.appendChild(row));
+            
+            // Inverser l'ordre de tri pour le prochain clic
+            currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+        }
+
+        // Fonction pour activer l'édition
+        function toggleEdit(index) {
+            const scoreDisplay = document.querySelector(`tr:nth-child(${index}) .score-display`);
+            const editForm = document.getElementById(`edit-form-${index}`);
+            
+            if (editForm.classList.contains('active')) {
+                cancelEdit(index);
+            } else {
+                // Masquer toutes les autres formes d'édition
+                document.querySelectorAll('.edit-form.active').forEach(form => {
+                    form.classList.remove('active');
+                });
+                document.querySelectorAll('.score-display').forEach(display => {
+                    display.style.display = 'inline';
+                });
+                
+                // Afficher cette forme d'édition
+                scoreDisplay.style.display = 'none';
+                editForm.classList.add('active');
+            }
+        }
+
+        // Fonction pour annuler l'édition
+        function cancelEdit(index) {
+            const scoreDisplay = document.querySelector(`tr:nth-child(${index}) .score-display`);
+            const editForm = document.getElementById(`edit-form-${index}`);
+            
+            scoreDisplay.style.display = 'inline';
+            editForm.classList.remove('active');
+        }
+
+        // Fermer l'édition en cliquant en dehors
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.edit-form') && !event.target.closest('button')) {
+                document.querySelectorAll('.edit-form.active').forEach((form, index) => {
+                    cancelEdit(index + 1);
+                });
+            }
+        });
+
+        // Animation des barres de niveau au chargement
+        window.addEventListener('load', function() {
+            const levelFills = document.querySelectorAll('.level-fill');
+            levelFills.forEach(fill => {
+                const width = fill.style.width;
+                fill.style.width = '0%';
+                setTimeout(() => {
+                    fill.style.width = width;
+                }, 100);
+            });
+        });
+
+        // Validation du formulaire d'ajout
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const nameInput = this.querySelector('input[name="player_name"]');
+            const scoreInput = this.querySelector('input[name="player_score"]');
+            
+            if (!nameInput.value.trim()) {
+                e.preventDefault();
+                alert('Veuillez entrer un nom de joueur valide.');
+                nameInput.focus();
+                return;
+            }
+            
+            const score = parseInt(scoreInput.value);
+            if (isNaN(score) || score < 0 || score > 100) {
+                e.preventDefault();
+                alert('Le niveau doit être un nombre entre 0 et 100.');
+                scoreInput.focus();
+                return;
+            }
+        });
+
+        // Effet de surbrillance au survol des lignes
+        document.querySelectorAll('.player-row').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f0f8ff';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+    </script>
 </body>
 </html>

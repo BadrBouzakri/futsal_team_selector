@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Équipes générées</title>
+    <title>Équipes Générées - Futsal</title>
     <style>
-        /* Réinitialisation des marges et paddings pour une compatibilité totale */
         * {
             margin: 0;
             padding: 0;
@@ -13,172 +12,389 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Aligner en haut pour permettre le défilement */
-            background-color: #f3f4f6;
-            overflow-y: auto; /* Assure le défilement vertical */
+            padding: 20px 0;
         }
 
-        /* Vidéo d'arrière-plan */
-        video#background-video {
-            position: fixed;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .match-info {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .match-info h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .teams-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .team-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-card::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-            filter: brightness(0.6); /* Assombrir légèrement la vidéo pour une meilleure lisibilité */
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
         }
 
-        /* Conteneur principal */
-        .container {
-            background-color: rgba(255, 255, 255, 0.75); /* Plus de transparence */
-            backdrop-filter: blur(5px); /* Flou plus subtil */
-            border-radius: 15px;
-            padding: 20px;
-            max-width: 900px;
-            width: 100%;
-            text-align: center;
-            color: #333;
-            z-index: 1;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-top: 30px;
-        }
-
-        h1 {
-            font-size: 32px;
-            margin-bottom: 20px;
-            color: #222;
-        }
-
-        /* Conteneur des équipes */
-        .teams {
-            display: flex;
-            flex-direction: column; /* Alignement vertical pour mobile */
-            gap: 20px;
-        }
-
-        /* Cartes d'équipe */
-        .team {
-            background: rgba(255, 255, 255, 0.7); /* Transparence pour les cartes */
-            border-radius: 10px;
-            padding: 15px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .team:hover {
+        .team-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
         }
 
-        .team h2 {
-            font-size: 22px;
-            margin-bottom: 10px;
-            color: #444;
+        .team-card.team1::before {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
         }
 
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        .team-card.team2::before {
+            background: linear-gradient(90deg, #2196F3, #1976D2);
         }
 
-        li {
-            margin: 5px 0;
-            padding: 8px;
-            border-radius: 5px;
-            background-color: rgba(0, 0, 0, 0.05);
+        .team-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .team-title {
+            font-size: 1.8rem;
+            font-weight: 600;
             color: #333;
-            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* Bouton pour revenir */
-        button {
-            background-color: #28a745;
+        .team-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .team1 .team-badge {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .team2 .team-badge {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .team-stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .team-stat {
+            text-align: center;
+        }
+
+        .team-stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .team-stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .players-list {
+            list-style: none;
+        }
+
+        .player-item {
+            background: #f8f9fa;
+            margin: 8px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ddd;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .team1 .player-item {
+            border-left-color: #4CAF50;
+        }
+
+        .team2 .player-item {
+            border-left-color: #2196F3;
+        }
+
+        .player-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .player-position {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .actions-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .btn {
             padding: 12px 25px;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        button:hover {
-            background-color: #218838;
-            transform: scale(1.05);
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
         }
 
-        /* Mobile optimizations */
+        .btn-secondary {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .balance-indicator {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .balance-excellent {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .balance-good {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .balance-poor {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .vs-indicator {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #667eea;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #666;
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .container {
-                padding: 15px;
+                margin: 10px;
+                padding: 20px;
             }
 
-            h1 {
-                font-size: 26px;
+            .header h1 {
+                font-size: 2rem;
             }
 
-            .team h2 {
-                font-size: 20px;
+            .teams-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
 
-            button {
-                padding: 10px 20px;
-                font-size: 14px;
+            .vs-indicator {
+                display: none;
             }
 
-            li {
-                font-size: 14px;
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
-            
-            /* Style pour la version imprimée */
-            @media print {
-                body, .container {
-                    background: white !important;
-                    color: black !important;
-                }
-                
-                video, button, form {
-                    display: none !important;
-                }
-                
-                .teams {
-                    display: flex;
-                    flex-direction: row;
-                    gap: 20px;
-                    page-break-inside: avoid;
-                }
-                
-                .team {
-                    border: 1px solid #ddd;
-                    box-shadow: none;
-                }
-                
-                footer {
-                    position: fixed;
-                    bottom: 0;
-                    width: 100%;
-                    text-align: center;
-                }
+
+            .actions-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
             }
         }
 
-        /* Animation d'apparition */
-        .team {
+        @media print {
+            body {
+                background: white !important;
+            }
+
+            .container {
+                background: white !important;
+                box-shadow: none !important;
+            }
+
+            .actions-container,
+            .btn {
+                display: none !important;
+            }
+
+            .teams-container {
+                gap: 20px;
+            }
+
+            .team-card {
+                border: 2px solid #ddd;
+                box-shadow: none;
+            }
+
+            .footer {
+                position: fixed;
+                bottom: 20px;
+                width: 100%;
+            }
+        }
+
+        /* Animations */
+        .team-card {
             opacity: 0;
             transform: translateY(20px);
             animation: fadeInUp 0.6s forwards;
+        }
+
+        .team-card:nth-child(2) {
+            animation-delay: 0.2s;
         }
 
         @keyframes fadeInUp {
@@ -187,142 +403,287 @@
                 transform: translateY(0);
             }
         }
-        
-        /* Style pour les stats des équipes */
-        .team-stats {
-            background-color: rgba(0, 0, 0, 0.1);
-            padding: 8px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .stats-item {
-            text-align: center;
-        }
-        
-        .stats-label {
-            font-size: 0.8em;
-            color: #666;
-        }
-        
-        .stats-value {
-            font-weight: bold;
-            font-size: 1.1em;
-            color: #333;
-        }
-        
-        /* Style pour le bouton d'impression */
-        .print-button {
-            background-color: #17a2b8;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .print-button:hover {
-            background-color: #138496;
+
+        .player-item {
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideInLeft 0.4s forwards;
         }
 
+        .team2 .player-item {
+            transform: translateX(20px);
+            animation: slideInRight 0.4s forwards;
+        }
+
+        @keyframes slideInLeft {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .player-item:nth-child(1) { animation-delay: 0.1s; }
+        .player-item:nth-child(2) { animation-delay: 0.2s; }
+        .player-item:nth-child(3) { animation-delay: 0.3s; }
+        .player-item:nth-child(4) { animation-delay: 0.4s; }
+        .player-item:nth-child(5) { animation-delay: 0.5s; }
     </style>
 </head>
 <body>
-    <!-- Vidéo d'arrière-plan locale -->
-    <video autoplay muted loop id="background-video">
-        <source src="{{ url_for('static', filename='background_teams.mp4') }}" type="video/mp4">
-        Votre navigateur ne supporte pas les vidéos HTML5.
-    </video>
-
     <div class="container">
-        <h1>Voici les équipes générées :</h1>
-        
-        <div style="margin-bottom: 20px; padding: 10px; background-color: rgba(255, 255, 255, 0.8); border-radius: 10px; color: #333;">
-            <h3 style="margin-bottom: 10px;">Statistiques des équipes</h3>
-            <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
-                <div style="text-align: center; padding: 10px;">
-                    <span style="font-weight: bold;">Méthode utilisée :</span> 
-                    {% if team_method == 'skill' %}
-                        <span>Par compétence</span>
-                    {% elif team_method == 'snake' %}
-                        <span>Serpent</span>
-                    {% elif team_method == 'random' %}
-                        <span>Aléatoire</span>
-                    {% endif %}
+        <div class="header">
+            <h1>🏆 Équipes Générées</h1>
+        </div>
+
+        <div class="match-info">
+            <h2>⚽ Match de Futsal</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Méthode utilisée</div>
+                    <div class="stat-value">
+                        {% if team_method == 'skill' %}
+                            🎯 Par compétence
+                        {% elif team_method == 'snake' %}
+                            🐍 Serpent
+                        {% elif team_method == 'random' %}
+                            🎲 Aléatoire
+                        {% endif %}
+                    </div>
                 </div>
-                <div style="text-align: center; padding: 10px;">
-                    <span style="font-weight: bold;">Équilibre :</span> 
-                    <span style="color: {% if balance_percent > 90 %}green{% elif balance_percent > 75 %}orange{% else %}red{% endif %};">
-                        {{ balance_percent }}%
-                    </span>
+                <div class="stat-item">
+                    <div class="stat-label">Équilibre des équipes</div>
+                    <div class="stat-value">{{ balance_percent }}%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Joueurs par équipe</div>
+                    <div class="stat-value">5 vs 5</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Date de création</div>
+                    <div class="stat-value">{{ moment().format('DD/MM/YYYY') }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="teams">
-            <div class="team">
-                <h2>Équipe 1</h2>
-                <div class="team-stats">
-                    <div class="stats-item">
-                        <div class="stats-label">Force totale</div>
-                        <div class="stats-value">{{ team1_score }}</div>
-                    </div>
-                    <div class="stats-item">
-                        <div class="stats-label">Moyenne</div>
-                        <div class="stats-value">{{ team1_avg }}%</div>
+        <div class="balance-indicator 
+            {% if balance_percent >= 90 %}balance-excellent
+            {% elif balance_percent >= 75 %}balance-good
+            {% else %}balance-poor{% endif %}">
+            {% if balance_percent >= 90 %}
+                🌟 Équipes parfaitement équilibrées !
+            {% elif balance_percent >= 75 %}
+                👍 Bon équilibre entre les équipes
+            {% else %}
+                ⚠️ Équipes déséquilibrées - Vous pouvez regénérer
+            {% endif %}
+        </div>
+
+        <div class="teams-container" style="position: relative;">
+            <div class="vs-indicator">VS</div>
+            
+            <div class="team-card team1">
+                <div class="team-header">
+                    <div class="team-title">
+                        <div class="team-badge">1</div>
+                        Équipe Verte
                     </div>
                 </div>
-                <ul>
+                
+                <div class="team-stats">
+                    <div class="team-stat">
+                        <div class="team-stat-label">Force totale</div>
+                        <div class="team-stat-value">{{ team1_score }}</div>
+                    </div>
+                    <div class="team-stat">
+                        <div class="team-stat-label">Moyenne</div>
+                        <div class="team-stat-value">{{ team1_avg }}</div>
+                    </div>
+                </div>
+                
+                <ul class="players-list">
                     {% for player in team1 %}
-                    <li>{{ player }} <span style="float: right; font-size: 0.8em; color: #666;">({{ all_players[player] }}%)</span></li>
+                    <li class="player-item">
+                        <div class="player-name">{{ player }}</div>
+                        <div class="player-position">
+                            {% if loop.index <= 2 %}
+                                🥅 Gardien/Défense
+                            {% elif loop.index <= 4 %}
+                                ⚽ Milieu
+                            {% else %}
+                                🏃 Attaque
+                            {% endif %}
+                        </div>
+                    </li>
                     {% endfor %}
                 </ul>
             </div>
-            <div class="team">
-                <h2>Équipe 2</h2>
-                <div class="team-stats">
-                    <div class="stats-item">
-                        <div class="stats-label">Force totale</div>
-                        <div class="stats-value">{{ team2_score }}</div>
-                    </div>
-                    <div class="stats-item">
-                        <div class="stats-label">Moyenne</div>
-                        <div class="stats-value">{{ team2_avg }}%</div>
+
+            <div class="team-card team2">
+                <div class="team-header">
+                    <div class="team-title">
+                        <div class="team-badge">2</div>
+                        Équipe Bleue
                     </div>
                 </div>
-                <ul>
+                
+                <div class="team-stats">
+                    <div class="team-stat">
+                        <div class="team-stat-label">Force totale</div>
+                        <div class="team-stat-value">{{ team2_score }}</div>
+                    </div>
+                    <div class="team-stat">
+                        <div class="team-stat-label">Moyenne</div>
+                        <div class="team-stat-value">{{ team2_avg }}</div>
+                    </div>
+                </div>
+                
+                <ul class="players-list">
                     {% for player in team2 %}
-                    <li>{{ player }} <span style="float: right; font-size: 0.8em; color: #666;">({{ all_players[player] }}%)</span></li>
+                    <li class="player-item">
+                        <div class="player-name">{{ player }}</div>
+                        <div class="player-position">
+                            {% if loop.index <= 2 %}
+                                🥅 Gardien/Défense
+                            {% elif loop.index <= 4 %}
+                                ⚽ Milieu
+                            {% else %}
+                                🏃 Attaque
+                            {% endif %}
+                        </div>
+                    </li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
-        
-        <div style="display: flex; gap: 15px; margin-top: 20px; justify-content: center;">
-            <button type="button" onclick="window.print()" class="print-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 5px;" viewBox="0 0 16 16">
-                    <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
-                    <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-                </svg>
-                Imprimer les équipes
+
+        <div class="actions-container">
+            <button type="button" onclick="window.print()" class="btn btn-secondary">
+                🖨️ Imprimer les équipes
             </button>
             
-            <form action="/" method="GET">
-                <button type="submit">Retour à la sélection</button>
-            </form>
+            <a href="/" class="btn btn-primary">
+                🔄 Nouvelle sélection
+            </a>
+            
+            <button type="button" onclick="regenerateTeams()" class="btn btn-info">
+                🎲 Regénérer les équipes
+            </button>
+            
+            <a href="/history" class="btn btn-secondary">
+                📅 Voir l'historique
+            </a>
         </div>
-        
-        <footer style="margin-top: 20px; font-size: 14px; color: #333; text-align: center;">
-            Application créée par Badr - {{ current_year }}
-        </footer>
+
+        <div class="footer">
+            <p>Application créée par Badr - {{ current_year }}</p>
+        </div>
     </div>
+
+    <script>
+        // Fonction pour regénérer les équipes avec la même sélection
+        function regenerateTeams() {
+            if (confirm('Voulez-vous regénérer les équipes avec les mêmes joueurs ?')) {
+                // Créer un formulaire invisible pour renvoyer la même sélection
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/';
+                
+                // Ajouter les joueurs sélectionnés
+                const team1Players = {{ team1|tojson }};
+                const team2Players = {{ team2|tojson }};
+                const allSelectedPlayers = team1Players.concat(team2Players);
+                
+                allSelectedPlayers.forEach(player => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'players';
+                    input.value = player;
+                    form.appendChild(input);
+                });
+                
+                // Ajouter la méthode actuelle
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = 'team_method';
+                methodInput.value = '{{ team_method }}';
+                form.appendChild(methodInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Fonction pour partager les équipes (si l'API Web Share est disponible)
+        function shareTeams() {
+            if (navigator.share) {
+                const team1 = {{ team1|tojson }};
+                const team2 = {{ team2|tojson }};
+                
+                const shareText = `🏆 Équipes Futsal générées !\n\n` +
+                    `Équipe Verte: ${team1.join(', ')}\n\n` +
+                    `Équipe Bleue: ${team2.join(', ')}\n\n` +
+                    `Équilibre: {{ balance_percent }}%`;
+                
+                navigator.share({
+                    title: 'Équipes Futsal',
+                    text: shareText
+                });
+            } else {
+                // Fallback: copier dans le presse-papiers
+                const team1 = {{ team1|tojson }};
+                const team2 = {{ team2|tojson }};
+                
+                const shareText = `🏆 Équipes Futsal générées !\n\n` +
+                    `Équipe Verte: ${team1.join(', ')}\n\n` +
+                    `Équipe Bleue: ${team2.join(', ')}\n\n` +
+                    `Équilibre: {{ balance_percent }}%`;
+                
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Équipes copiées dans le presse-papiers !');
+                });
+            }
+        }
+
+        // Animation au survol des cartes d'équipes
+        document.querySelectorAll('.team-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Effet de particules en arrière-plan (optionnel)
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.top = Math.random() * 100 + 'vh';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.width = '4px';
+            particle.style.height = '4px';
+            particle.style.background = 'rgba(255, 255, 255, 0.5)';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '-1';
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 3000);
+        }
+
+        // Créer des particules périodiquement
+        setInterval(createParticle, 500);
+    </script>
 </body>
 </html>
