@@ -3,335 +3,598 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Créer des équipes équilibrées</title>
+    <title>Générateur d'Équipes Futsal</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Aligner en haut */
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
             min-height: 100vh;
-            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             overflow-x: hidden;
-            overflow-y: auto; /* S'assurer que le défilement vertical est possible */
-            background-color: #f0f0f0;
+            overflow-y: auto;
         }
 
-        /* Vidéo d'arrière-plan */
-        video#background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-            filter: brightness(0.5); /* Assombrir légèrement la vidéo */
-        }
-
-        /* Conteneur */
         .container {
-            background-color: rgba(0, 0, 0, 0.6); /* Fond assombri pour le texte */
-            border-radius: 15px;
-            padding: 40px;
-            max-width: 900px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            z-index: 1;
-            margin-bottom: 40px; /* Pour éviter que le contenu touche le bas */
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1000px;
+            width: 90%;
+            margin: 20px auto;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
         }
 
         h1 {
-            margin-bottom: 20px;
-            font-size: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            color: #333;
+            font-weight: 300;
         }
 
-        .players-list {
+        .stats-banner {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .stats-banner h3 {
+            margin-bottom: 10px;
+        }
+
+        .players-container {
+            margin-bottom: 30px;
+        }
+
+        .search-section {
+            margin-bottom: 20px;
             display: flex;
+            gap: 10px;
+            align-items: center;
             flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .quick-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .player-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .player-card.selected {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+            transform: scale(1.02);
+        }
+
+        .player-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
             justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .player-card input[type="checkbox"] {
+            display: none;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .selection-counter {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .counter-number {
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+
+        .counter-number.complete {
+            color: #4CAF50;
+        }
+
+        .counter-number.excess {
+            color: #f44336;
+        }
+
+        .method-selector {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .method-selector h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .method-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
         }
 
-        .players-list label {
-            display: flex;
-            align-items: center;
-            width: 150px;
-            color: white;
-            font-weight: bold;
+        .method-option {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
             cursor: pointer;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            padding: 8px;
-            margin: 5px;
-            border-radius: 5px;
-            background-color: rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
         }
 
-        .players-list input[type="checkbox"] {
-            margin-right: 10px;
-            transform: scale(1.3);
+        .method-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
         }
 
-        .players-list label:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
-            background-color: rgba(0, 123, 255, 0.3);
-        }
-        
-        .player-score {
-            margin-left: 5px;
-            font-size: 0.8em;
-            color: #aaa;
-        }
-        
-        #players-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: rgba(0, 0, 0, 0.2);
+        .method-option.selected {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
         }
 
-        button {
-            background-color: #28a745;
+        .method-option input[type="radio"] {
+            display: none;
+        }
+
+        .method-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .method-description {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
             color: white;
-            padding: 15px 40px;
             border: none;
-            border-radius: 5px;
+            padding: 15px 40px;
+            border-radius: 12px;
             font-size: 18px;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s ease-in-out;
-        }
-
-        button:hover {
-            background-color: #218838;
-            transform: scale(1.05);
-        }
-
-        footer {
-            margin-top: 30px;
-            font-size: 14px;
-            color: white;
-            padding: 10px;
-            text-align: center;
+            transition: all 0.3s ease;
             width: 100%;
-        }
-
-        footer a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .error-message {
-            color: red;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-
-        /* Lien vers l'administration */
-        .admin-link {
             margin-top: 20px;
-            text-align: right;
-            font-size: 14px;
-            color: white;
+            font-weight: 600;
         }
 
-        .admin-link a {
-            color: #007bff;
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .navigation-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .nav-link {
+            color: #667eea;
             text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
 
-        .admin-link a:hover {
+        .nav-link:hover {
+            color: #4CAF50;
             text-decoration: underline;
         }
 
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .error-message {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .success-message {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
         @media (max-width: 768px) {
-            /* Pour s'assurer que le contenu est bien lisible sur mobile */
             .container {
+                width: 95%;
                 padding: 20px;
-                max-width: 100%;
             }
 
             h1 {
-                font-size: 30px;
+                font-size: 2rem;
             }
 
-            button {
-                font-size: 16px;
-                padding: 10px 30px;
+            .players-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 10px;
             }
 
-            .players-list label {
-                width: 100%;
-                justify-content: flex-start;
+            .method-options {
+                grid-template-columns: 1fr;
+            }
+
+            .search-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .quick-buttons {
+                justify-content: center;
             }
         }
     </style>
-    <script>
-        function updateCounter() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            let count = 0;
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    count++;
-                }
-            });
-
-            const playerCount = document.getElementById('player-count');
-            playerCount.textContent = count;
-            
-            // Changer la couleur du texte selon le nombre de joueurs sélectionnés
-            if (count === 10) {
-                playerCount.style.color = '#28a745'; // Vert pour indiquer que c'est correct
-            } else if (count > 10) {
-                playerCount.style.color = '#dc3545'; // Rouge pour indiquer qu'il y a trop de joueurs
-            } else {
-                playerCount.style.color = '#ffc107'; // Jaune/orange pour indiquer qu'il en manque
-            }
-            
-            if (count >= 10) {
-                checkboxes.forEach(checkbox => {
-                    if (!checkbox.checked) checkbox.disabled = true; // Désactiver les cases non cochées
-                });
-            } else {
-                checkboxes.forEach(checkbox => checkbox.disabled = false); // Réactiver les cases non cochées
-            }
-            
-            // Activer/désactiver le bouton de génération selon le nombre de joueurs
-            const submitButton = document.querySelector('button[type="submit"]');
-            if (count === 10) {
-                submitButton.disabled = false;
-                submitButton.style.opacity = '1';
-            } else {
-                submitButton.disabled = true;
-                submitButton.style.opacity = '0.5';
-            }
-        }
-        
-        function filterPlayers() {
-            const searchTerm = document.getElementById('player-search').value.toLowerCase();
-            const playerLabels = document.querySelectorAll('.player-item');
-            
-            playerLabels.forEach(label => {
-                const playerName = label.textContent.toLowerCase();
-                if (playerName.includes(searchTerm)) {
-                    label.style.display = 'flex';
-                } else {
-                    label.style.display = 'none';
-                }
-            });
-        }
-        
-        // Fonction pour sélectionner aléatoirement 10 joueurs
-        function selectRandomPlayers() {
-            // Reset current selection
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            
-            // Get all checkboxes as an array and shuffle them
-            const checkboxArray = Array.from(checkboxes);
-            for (let i = checkboxArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [checkboxArray[i], checkboxArray[j]] = [checkboxArray[j], checkboxArray[i]];
-            }
-            
-            // Select the first 10
-            for (let i = 0; i < 10 && i < checkboxArray.length; i++) {
-                checkboxArray[i].checked = true;
-            }
-            
-            // Update the counter
-            updateCounter();
-        }
-        
-        // Initialiser le statut du bouton au chargement de la page
-        window.onload = function() {
-            updateCounter();
-        }
-    </script>
 </head>
 <body>
-    <!-- Vidéo d'arrière-plan -->
-    <video autoplay muted loop id="background-video">
-        <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
-        Votre navigateur ne supporte pas les vidéos HTML5.
-    </video>
-
     <div class="container">
-        <h1>Créer des équipes équilibrées</h1>
-        <form method="POST">
-            <div class="players-list">
-                <h2>Sélectionnez 10 joueurs :</h2>
-                <div class="search-bar">
-                    <input type="text" id="player-search" placeholder="Rechercher un joueur..." 
-                           onkeyup="filterPlayers()" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;">
+        <h1>🏆 Générateur d'Équipes Futsal</h1>
+        
+        <div class="stats-banner">
+            <h3>⚽ Créez des équipes équilibrées pour vos matchs</h3>
+            <p>Sélectionnez exactement 10 joueurs et choisissez votre méthode d'équilibrage préférée</p>
+        </div>
+
+        <form method="POST" id="team-form">
+            <div class="players-container">
+                <h2 style="margin-bottom: 20px; color: #333;">Sélection des joueurs</h2>
+                
+                <div class="search-section">
+                    <input type="text" 
+                           id="player-search" 
+                           class="search-input"
+                           placeholder="🔍 Rechercher un joueur..." 
+                           onkeyup="filterPlayers()">
+                    
+                    <div class="quick-buttons">
+                        <button type="button" class="btn-secondary" onclick="clearSelection()">
+                            ❌ Tout désélectionner
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="selectRandomPlayers()">
+                            🎲 Sélection aléatoire
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="selectBalancedTeam()">
+                            ⚖️ Sélection équilibrée
+                        </button>
+                    </div>
                 </div>
-                <div id="players-container">
-                {% for player in all_players.keys() %}
-                    <label class="player-item">
-                        <input type="checkbox" name="players" value="{{ player }}" onchange="updateCounter()"> <strong>{{ player }}</strong>
-                        <span class="player-score">({{ all_players[player] }}%)</span>
+
+                <div class="selection-counter">
+                    Joueurs sélectionnés : <span id="player-count" class="counter-number">0</span>/10
+                </div>
+
+                <div class="players-grid" id="players-container">
+                    {% for player in all_players.keys() %}
+                    <label class="player-card player-item" data-player="{{ player }}">
+                        <input type="checkbox" name="players" value="{{ player }}" onchange="updateCounter()">
+                        <div class="player-name">{{ player }}</div>
                     </label>
-                {% endfor %}
+                    {% endfor %}
                 </div>
             </div>
-            <p>Joueurs sélectionnés : <span id="player-count">0</span>/10</p>
-            
-            <button type="button" onclick="selectRandomPlayers()" style="background-color: #17a2b8; margin-bottom: 15px;">
-                Sélection aléatoire de 10 joueurs
-            </button>
-            
-            <div class="method-selector" style="margin: 20px 0; background-color: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 10px;">
-                <h3>Méthode d'équilibrage :</h3>
-                <div style="display: flex; justify-content: center; gap: 15px; margin: 15px 0;">
-                    <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; background-color: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 5px; width: 120px;">
+
+            <div class="method-selector">
+                <h3>⚙️ Méthode d'équilibrage</h3>
+                <div class="method-options">
+                    <label class="method-option" data-method="skill">
                         <input type="radio" name="team_method" value="skill" checked>
-                        <span style="margin-top: 5px; font-weight: bold;">Par compétence</span>
-                        <span style="font-size: 0.8em; text-align: center; margin-top: 5px;">Équilibre selon niveau</span>
+                        <div class="method-title">🎯 Par compétence</div>
+                        <div class="method-description">Équilibrage intelligent selon le niveau</div>
                     </label>
-                    <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; background-color: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 5px; width: 120px;">
+                    <label class="method-option" data-method="snake">
                         <input type="radio" name="team_method" value="snake">
-                        <span style="margin-top: 5px; font-weight: bold;">Serpent</span>
-                        <span style="font-size: 0.8em; text-align: center; margin-top: 5px;">1-2-2-1 etc.</span>
+                        <div class="method-title">🐍 Serpent</div>
+                        <div class="method-description">Distribution 1-2-2-1 alternée</div>
                     </label>
-                    <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; background-color: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 5px; width: 120px;">
+                    <label class="method-option" data-method="random">
                         <input type="radio" name="team_method" value="random">
-                        <span style="margin-top: 5px; font-weight: bold;">Aléatoire</span>
-                        <span style="font-size: 0.8em; text-align: center; margin-top: 5px;">Répartition au hasard</span>
+                        <div class="method-title">🎲 Aléatoire</div>
+                        <div class="method-description">Répartition totalement hasard</div>
                     </label>
                 </div>
             </div>
-            
-            <button type="submit">Générer des équipes</button>
-            <div class="error-message">
+
+            <button type="submit" class="btn-primary" id="generate-btn" disabled>
+                🚀 Générer les équipes
+            </button>
+
+            <div class="error-message" style="display: none;" id="error-msg">
                 {% with messages = get_flashed_messages() %}
                     {% if messages %}
-                        <ul>
                         {% for message in messages %}
-                            <li>{{ message }}</li>
+                            {{ message }}
                         {% endfor %}
-                        </ul>
                     {% endif %}
                 {% endwith %}
             </div>
         </form>
 
-        <!-- Lien vers la console d'administration -->
-        <div class="admin-link">
-            <a href="/admin">Administration</a>
+        <div class="navigation-links">
+            <a href="/history" class="nav-link">📅 Historique des équipes</a>
+            <a href="/admin" class="nav-link">⚙️ Administration</a>
         </div>
-        
-        <footer>
-            Application créée par Badr - {{ current_year }}
-        </footer>
+
+        <div class="footer">
+            <p>Application créée par Badr - {{ current_year }}</p>
+        </div>
     </div>
+
+    <script>
+        // Variables globales
+        let selectedCount = 0;
+
+        // Initialisation au chargement de la page
+        window.onload = function() {
+            updateCounter();
+            initializeMethodSelector();
+            
+            // Afficher les messages flash s'il y en a
+            {% if get_flashed_messages() %}
+                document.getElementById('error-msg').style.display = 'block';
+            {% endif %}
+        }
+
+        // Gestion du compteur de joueurs sélectionnés
+        function updateCounter() {
+            const checkboxes = document.querySelectorAll('input[name="players"]');
+            selectedCount = 0;
+            
+            checkboxes.forEach(checkbox => {
+                const card = checkbox.closest('.player-card');
+                if (checkbox.checked) {
+                    selectedCount++;
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+
+            const playerCountElement = document.getElementById('player-count');
+            playerCountElement.textContent = selectedCount;
+            
+            // Mise à jour des couleurs selon le nombre
+            playerCountElement.className = 'counter-number';
+            if (selectedCount === 10) {
+                playerCountElement.classList.add('complete');
+            } else if (selectedCount > 10) {
+                playerCountElement.classList.add('excess');
+            }
+            
+            // Gestion des checkboxes désactivées
+            if (selectedCount >= 10) {
+                checkboxes.forEach(checkbox => {
+                    if (!checkbox.checked) {
+                        checkbox.disabled = true;
+                        checkbox.closest('.player-card').style.opacity = '0.5';
+                    }
+                });
+            } else {
+                checkboxes.forEach(checkbox => {
+                    checkbox.disabled = false;
+                    checkbox.closest('.player-card').style.opacity = '1';
+                });
+            }
+            
+            // Activation/désactivation du bouton
+            const submitButton = document.getElementById('generate-btn');
+            submitButton.disabled = selectedCount !== 10;
+        }
+
+        // Filtrage des joueurs
+        function filterPlayers() {
+            const searchTerm = document.getElementById('player-search').value.toLowerCase();
+            const playerCards = document.querySelectorAll('.player-item');
+            
+            playerCards.forEach(card => {
+                const playerName = card.dataset.player.toLowerCase();
+                if (playerName.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Désélectionner tous les joueurs
+        function clearSelection() {
+            const checkboxes = document.querySelectorAll('input[name="players"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateCounter();
+        }
+
+        // Sélection aléatoire de 10 joueurs
+        function selectRandomPlayers() {
+            clearSelection();
+            
+            const checkboxes = Array.from(document.querySelectorAll('input[name="players"]'));
+            const shuffled = checkboxes.sort(() => 0.5 - Math.random());
+            
+            for (let i = 0; i < 10 && i < shuffled.length; i++) {
+                shuffled[i].checked = true;
+            }
+            
+            updateCounter();
+        }
+
+        // Sélection équilibrée via API
+        async function selectBalancedTeam() {
+            try {
+                const response = await fetch('/api/suggest-players');
+                const suggestedPlayers = await response.json();
+                
+                clearSelection();
+                
+                const checkboxes = document.querySelectorAll('input[name="players"]');
+                checkboxes.forEach(checkbox => {
+                    if (suggestedPlayers.includes(checkbox.value)) {
+                        checkbox.checked = true;
+                    }
+                });
+                
+                updateCounter();
+            } catch (error) {
+                console.error('Erreur lors de la suggestion de joueurs:', error);
+                selectRandomPlayers(); // Fallback vers sélection aléatoire
+            }
+        }
+
+        // Initialisation du sélecteur de méthode
+        function initializeMethodSelector() {
+            const methodOptions = document.querySelectorAll('.method-option');
+            
+            methodOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Déselectionner toutes les options
+                    methodOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Sélectionner l'option cliquée
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+                });
+            });
+
+            // Marquer l'option par défaut comme sélectionnée
+            document.querySelector('.method-option[data-method="skill"]').classList.add('selected');
+        }
+
+        // Gestion des clics sur les cartes de joueurs
+        document.addEventListener('DOMContentLoaded', function() {
+            const playerCards = document.querySelectorAll('.player-card');
+            
+            playerCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    if (!checkbox.disabled) {
+                        checkbox.checked = !checkbox.checked;
+                        updateCounter();
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
