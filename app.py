@@ -1,11 +1,29 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import random
 import datetime
+import json
+import os
+from config import config
 
-app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Nécessaire pour les sessions et les messages flash
+# Initialisation de l'application Flask
+def create_app(config_name='default'):
+    app = Flask(__name__)
+    
+    # Charger la configuration
+    app.config.from_object(config[config_name])
+    
+    # Créer le répertoire de données si nécessaire
+    data_dir = app.config.get('DATA_DIR', 'data')
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+    
+    return app
 
-# Liste des joueurs avec leurs pourcentages de réussite
+# Créer l'application
+config_name = os.environ.get('FLASK_CONFIG', 'default')
+app = create_app(config_name)
+
+# Liste des joueurs avec leurs niveaux (cachés côté utilisateur)
 all_players = {
     "Badr": 70, "Aymane": 90, "Yassine": 80, "Mounir": 60,
     "Luis": 50, "Mehdi": 90, "Tano": 90, "Elie": 85,
@@ -14,6 +32,34 @@ all_players = {
     "Jalal": 70, "Younes": 80, "Naim": 70, "Meh": 80, "Mehdi le r": 90,
     "Vincent": 70, "Kevin": 70, "Saad": 80, "Aziz": 90, "Abdallah": 70
 }
+
+# Fichier pour sauvegarder l'historique des équipes
+HISTORY_FILE = os.path.join(app.config.get('DATA_DIR', 'data'), app.config.get('HISTORY_FILE', 'teams_history.json'))
+
+# Fonction pour charger l'historique
+def load_history():
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            app.logger.error(f"Erreur lors du chargement de l'historique: {e}")
+            return []
+    return []
+
+# Fonction pour sauvegarder l'historique
+def save_history(team_data):
+    history = load_history()
+    history.insert(0, team_data)  # Ajouter au début
+    # Garder seulement le nombre maximal d'éléments configuré
+    max_items = app.config.get('MAX_HISTORY_ITEMS', 20)
+    history = history[:max_items]
+    try:
+        with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        app.logger.error(f"Erreur lors de la sauvegarde de l'historique: {e}")
+        pass
 
 # Fonction d'équilibrage des équipes avec plusieurs méthodes
 def balance_teams(selected_players, method='skill'):
@@ -67,7 +113,7 @@ def index():
         team_method = request.form.get('team_method', 'skill')
         
         if len(selected_players) != 10:
-            flash('Veuillez sélectionner 10 joueurs.')
+            flash('Veuillez sélectionner exactement 10 joueurs.')
             return redirect(url_for('index'))
 
         if team_method == 'skill':
@@ -88,10 +134,24 @@ def index():
 
         session['team1'], session['team2'] = team1, team2
         session['team_method'] = team_method
+        
+        # Sauvegarder dans l'historique
+        team_data = {
+            'date': datetime.datetime.now().strftime('%d/%m/%Y %H:%M'),
+            'team1': team1,
+            'team2': team2,
+            'method': team_method,
+            'team1_score': team1_score,
+            'team2_score': team2_score
+        }
+        save_history(team_data)
+        
         return redirect(url_for('teams'))
 
     current_year = datetime.datetime.now().year
-    return render_template('index.html', all_players=all_players, current_year=current_year)
+    # Trier les joueurs par ordre alphabétique pour un affichage plus propre
+    sorted_players = dict(sorted(all_players.items()))
+    return render_template('index.html', all_players=sorted_players, current_year=current_year)
 
 # Route pour afficher les équipes
 @app.route('/teams')
@@ -109,7 +169,7 @@ def teams():
     team1_avg = round(team1_score / len(session['team1']))
     team2_avg = round(team2_score / len(session['team2']))
     score_diff = abs(team1_score - team2_score)
-    balance_percent = round(100 - (score_diff / ((team1_score + team2_score) / 2) * 100))
+    balance_percent = round(100 - (score_diff / ((team1_score + team2_score) / 2) * 100)) if (team1_score + team2_score) > 0 else 0
     
     current_year = datetime.datetime.now().year
     return render_template('teams.html', 
@@ -121,18 +181,58 @@ def teams():
                           team2_avg=team2_avg,
                           balance_percent=balance_percent,
                           team_method=team_method,
-                          all_players=all_players,
                           current_year=current_year)
+
+# Route pour l'historique des équipes
+@app.route('/history')
+def history():
+    history_data = load_history()
+    current_year = datetime.datetime.now().year
+    return render_template('history.html', history=history_data, current_year=current_year)
+
+# Route API pour obtenir des suggestions de joueurs
+@app.route('/api/suggest-players')
+def suggest_players():
+    """Suggère une sélection équilibrée de 10 joueurs"""
+    players_list = list(all_players.keys())
+    
+    # Diviser les joueurs en niveaux
+    high_level = [p for p in players_list if all_players[p] >= 80]
+    medium_level = [p for p in players_list if 65 <= all_players[p] < 80]
+    low_level = [p for p in players_list if all_players[p] < 65]
+    
+    # Sélectionner un mix équilibré
+    suggested = []
+    random.shuffle(high_level)
+    random.shuffle(medium_level)
+    random.shuffle(low_level)
+    
+    # 4 joueurs de haut niveau, 4 de niveau moyen, 2 de niveau bas
+    suggested.extend(high_level[:4])
+    suggested.extend(medium_level[:4])
+    suggested.extend(low_level[:2])
+    
+    # Compléter si nécessaire
+    remaining = [p for p in players_list if p not in suggested]
+    random.shuffle(remaining)
+    while len(suggested) < 10 and remaining:
+        suggested.append(remaining.pop())
+    
+    return jsonify(suggested[:10])
 
 # Route pour la page de connexion à l'administration
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
 
-        if username == 'admin' and password == 'admin':
+        admin_username = app.config.get('ADMIN_USERNAME', 'admin')
+        admin_password = app.config.get('ADMIN_PASSWORD', 'admin')
+        
+        if username == admin_username and password == admin_password:
             session['admin_logged_in'] = True
+            session.permanent = True
             return redirect(url_for('admin_console'))
         else:
             flash('Nom d\'utilisateur ou mot de passe incorrect')
@@ -150,15 +250,18 @@ def admin_console():
     if request.method == 'POST':
         # Gestion de l'ajout de joueur
         if 'player_name' in request.form:
-            new_player = request.form['player_name']
+            new_player = request.form['player_name'].strip()
             new_score = request.form['player_score']
 
             if new_player and new_score:
-                all_players[new_player] = int(new_score)
-                flash(f'Le joueur {new_player} a été ajouté avec un score de {new_score}')
+                if new_player not in all_players:
+                    all_players[new_player] = int(new_score)
+                    flash(f'Le joueur {new_player} a été ajouté avec un niveau de {new_score}')
+                else:
+                    flash(f'Le joueur {new_player} existe déjà')
                 return redirect(url_for('admin_console'))
             else:
-                flash('Veuillez entrer un nom et un score valides.')
+                flash('Veuillez entrer un nom et un niveau valides.')
         
         # Gestion de la suppression de joueur
         elif 'delete_player' in request.form:
@@ -175,7 +278,7 @@ def admin_console():
             
             if player_to_edit in all_players and new_score:
                 all_players[player_to_edit] = int(new_score)
-                flash(f'Le score de {player_to_edit} a été mis à jour à {new_score}')
+                flash(f'Le niveau de {player_to_edit} a été mis à jour à {new_score}')
                 return redirect(url_for('admin_console'))
 
     # Trier les joueurs par nom
@@ -191,5 +294,42 @@ def admin_logout():
     flash('Vous avez été déconnecté de l\'administration.')
     return redirect(url_for('index'))
 
+# Route pour effacer l'historique (admin seulement)
+@app.route('/admin/clear-history')
+def clear_history():
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin'))
+    
+    try:
+        if os.path.exists(HISTORY_FILE):
+            os.remove(HISTORY_FILE)
+        flash('Historique effacé avec succès')
+    except:
+        flash('Erreur lors de l\'effacement de l\'historique')
+    
+    return redirect(url_for('admin_console'))
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5050, debug=True)
+    # Configuration du logging
+    if not app.debug:
+        import logging
+        from logging.handlers import RotatingFileHandler
+        
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+        
+        file_handler = RotatingFileHandler('logs/futsal_app.log', maxBytes=10240, backupCount=10)
+        file_handler.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+        ))
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+        app.logger.setLevel(logging.INFO)
+        app.logger.info('Application Futsal démarrée')
+    
+    # Démarrer l'application
+    host = app.config.get('HOST', '0.0.0.0')
+    port = app.config.get('PORT', 5050)
+    debug = app.config.get('DEBUG', True)
+    
+    app.run(host=host, port=port, debug=debug)
